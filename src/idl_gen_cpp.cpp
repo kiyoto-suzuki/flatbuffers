@@ -207,6 +207,37 @@ static void GenEnum(const Parser &parser, EnumDef &enum_def,
     code += "]; }\n\n";
   }
 
+  // Generate a generate vector tables for enum values. ex.) enumTypeList
+  static const int kMaxSparseness2 = 100;
+  if (range / static_cast<int64_t>(enum_def.vals.vec.size()) < kMaxSparseness2) {
+    code += "namespace enum_list { // enum_list\n";
+    code += "static const std::vector<" + enum_def.name + "> " +  enum_def.name + "List = {\n";
+    for (auto it = enum_def.vals.vec.begin();
+         it != enum_def.vals.vec.end();
+         ++it) {
+      auto &ev = **it;
+      if (ev.value == 0) continue; // skip 0 value
+      GenComment(ev.doc_comment, code_ptr, nullptr, "  ");
+      code += "  " + enum_def.name + "::" + GenEnumVal(enum_def, ev.name, parser.opts) + ",\n";
+    }
+
+    code += "};\n} // enum_list \n\n";
+  }
+  // Generate a generate vector tables for enum values. ex.) enumTypeListAll
+  if (range / static_cast<int64_t>(enum_def.vals.vec.size()) < kMaxSparseness2) {
+    code += "namespace enum_list { // enum_list\n";
+    code += "static const std::vector<" + enum_def.name + "> " +  enum_def.name + "ListAll = {\n";
+    for (auto it = enum_def.vals.vec.begin();
+         it != enum_def.vals.vec.end();
+         ++it) {
+      auto &ev = **it;
+      GenComment(ev.doc_comment, code_ptr, nullptr, "  ");
+      code += "  " + enum_def.name + "::" + GenEnumVal(enum_def, ev.name, parser.opts) + ",\n";
+    }
+
+    code += "};\n} // enum_list \n\n";
+  }
+
   if (enum_def.is_union) {
     // Generate a verifier function for this union that can be called by the
     // table verifier functions. It uses a switch case to select a specific

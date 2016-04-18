@@ -210,7 +210,6 @@ static void GenEnum(const Parser &parser, EnumDef &enum_def,
   // Generate a generate vector tables for enum values. ex.) enumTypeList
   static const int kMaxSparseness2 = 100;
   if (range / static_cast<int64_t>(enum_def.vals.vec.size()) < kMaxSparseness2) {
-    code += "namespace enum_list { // enum_list\n";
     code += "static const std::vector<" + enum_def.name + "> " +  enum_def.name + "List = {\n";
     for (auto it = enum_def.vals.vec.begin();
          it != enum_def.vals.vec.end();
@@ -221,11 +220,10 @@ static void GenEnum(const Parser &parser, EnumDef &enum_def,
       code += "  " + enum_def.name + "::" + GenEnumVal(enum_def, ev.name, parser.opts) + ",\n";
     }
 
-    code += "};\n} // enum_list \n\n";
+    code += "}; \n\n";
   }
   // Generate a generate vector tables for enum values. ex.) enumTypeListAll
   if (range / static_cast<int64_t>(enum_def.vals.vec.size()) < kMaxSparseness2) {
-    code += "namespace enum_list { // enum_list\n";
     code += "static const std::vector<" + enum_def.name + "> " +  enum_def.name + "ListAll = {\n";
     for (auto it = enum_def.vals.vec.begin();
          it != enum_def.vals.vec.end();
@@ -235,7 +233,7 @@ static void GenEnum(const Parser &parser, EnumDef &enum_def,
       code += "  " + enum_def.name + "::" + GenEnumVal(enum_def, ev.name, parser.opts) + ",\n";
     }
 
-    code += "};\n} // enum_list \n\n";
+    code += "}; \n\n";
   }
 
   if (enum_def.is_union) {

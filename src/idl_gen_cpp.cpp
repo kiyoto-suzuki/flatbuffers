@@ -215,7 +215,7 @@ static void GenEnum(const Parser &parser, EnumDef &enum_def,
          it != enum_def.vals.vec.end();
          ++it) {
       auto &ev = **it;
-      if (ev.value == 0) continue; // skip 0 value
+      if (ev.value == 0 && ev.name == "NONE") continue; // skip 0 value and "NONE" enum name.
       GenComment(ev.doc_comment, code_ptr, nullptr, "  ");
       code += "  " + enum_def.name + "::" + GenEnumVal(enum_def, ev.name, parser.opts) + ",\n";
     }

@@ -318,6 +318,7 @@ struct IDLOptions {
   bool include_dependence_headers;
   bool mutable_buffer;
   bool one_file;
+  bool multi_file;
   bool proto_mode;
   bool generate_all;
   bool skip_unexpected_fields_in_json;
@@ -336,6 +337,7 @@ struct IDLOptions {
       include_dependence_headers(true),
       mutable_buffer(false),
       one_file(false),
+      multi_file(false),
       proto_mode(false),
       generate_all(false),
       skip_unexpected_fields_in_json(false),
@@ -563,8 +565,6 @@ extern bool GenerateBinary(const Parser &parser,
 
 // Generate a C++ header from the definitions in the Parser object.
 // See idl_gen_cpp.
-extern std::string GenerateCPP(const Parser &parser,
-                               const std::string &include_guard_ident);
 extern bool GenerateCPP(const Parser &parser,
                         const std::string &path,
                         const std::string &file_name);

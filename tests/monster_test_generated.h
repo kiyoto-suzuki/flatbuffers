@@ -43,6 +43,12 @@ inline const char **EnumNamesColor() {
 
 inline const char *EnumNameColor(Color e) { return EnumNamesColor()[static_cast<int>(e) - static_cast<int>(Color_Red)]; }
 
+static const std::vector<Color> ColorList = {
+  Color::Color_Red,
+  Color::Color_Green,
+  Color::Color_Blue,
+}; 
+
 enum Any {
   Any_NONE = 0,
   Any_Monster = 1,
@@ -77,6 +83,12 @@ inline const char **EnumNamesAny() {
 inline const char *EnumNameAny(Any e) { return EnumNamesAny()[static_cast<int>(e)]; }
 
 inline bool VerifyAny(flatbuffers::Verifier &verifier, const void *union_obj, Any type);
+
+static const std::vector<Any> AnyList = {
+  Any::Any_Monster,
+  Any::Any_TestSimpleTableWithEnum,
+  Any::Any_MyGame_Example2_Monster,
+}; 
 
 MANUALLY_ALIGNED_STRUCT(2) Test FLATBUFFERS_FINAL_CLASS {
  private:

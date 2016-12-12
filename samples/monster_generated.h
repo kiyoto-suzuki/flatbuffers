@@ -31,6 +31,12 @@ inline const char **EnumNamesColor() {
 
 inline const char *EnumNameColor(Color e) { return EnumNamesColor()[static_cast<int>(e)]; }
 
+static const std::vector<Color> ColorList = {
+  Color::Color_Red,
+  Color::Color_Green,
+  Color::Color_Blue,
+}; 
+
 enum Equipment {
   Equipment_NONE = 0,
   Equipment_Weapon = 1,
@@ -61,6 +67,10 @@ inline const char **EnumNamesEquipment() {
 inline const char *EnumNameEquipment(Equipment e) { return EnumNamesEquipment()[static_cast<int>(e)]; }
 
 inline bool VerifyEquipment(flatbuffers::Verifier &verifier, const void *union_obj, Equipment type);
+
+static const std::vector<Equipment> EquipmentList = {
+  Equipment::Equipment_Weapon,
+}; 
 
 MANUALLY_ALIGNED_STRUCT(4) Vec3 FLATBUFFERS_FINAL_CLASS {
  private:

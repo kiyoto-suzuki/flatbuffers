@@ -224,7 +224,7 @@ struct Definition {
 };
 
 struct FieldDef : public Definition {
-#ifdef AES_ENCYPTION
+#ifdef FLATBUFFERS_ENCRYPTION
   FieldDef() : deprecated(false), required(false), key(false), padding(AES_BLOCK_SIZE) {}
 #else
   FieldDef() : deprecated(false), required(false), key(false), padding(0) {}
@@ -247,7 +247,7 @@ struct StructDef : public Definition {
       predecl(true),
       sortbysize(true),
       has_key(false),
-#if AES_ENCYPTION
+#if FLATBUFFERS_ENCRYPTION
       minalign(AES_BLOCK_SIZE),
 #else
       minalign(1),

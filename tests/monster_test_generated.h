@@ -233,8 +233,8 @@ struct Stat FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_VAL = 6,
     VT_COUNT = 8
   };
-  const flatbuffers::String *id() const { return GetPointer<const flatbuffers::String *>(VT_ID); }
-  flatbuffers::String *mutable_id() { return GetPointer<flatbuffers::String *>(VT_ID); }
+  const flatbuffers::String *id() const { return GetString<const flatbuffers::String *>(VT_ID); }
+  flatbuffers::String *mutable_id() { return GetString<flatbuffers::String *>(VT_ID); }
   int64_t val() const { return GetField<int64_t>(VT_VAL, 0); }
   bool mutate_val(int64_t _val) { return SetField(VT_VAL, _val); }
   uint16_t count() const { return GetField<uint16_t>(VT_COUNT, 0); }
@@ -352,8 +352,8 @@ struct Monster FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool mutate_mana(int16_t _mana) { return SetField(VT_MANA, _mana); }
   int16_t hp() const { return GetField<int16_t>(VT_HP, 100); }
   bool mutate_hp(int16_t _hp) { return SetField(VT_HP, _hp); }
-  const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
-  flatbuffers::String *mutable_name() { return GetPointer<flatbuffers::String *>(VT_NAME); }
+  const flatbuffers::String *name() const { return GetString<const flatbuffers::String *>(VT_NAME); }
+  flatbuffers::String *mutable_name() { return GetString<flatbuffers::String *>(VT_NAME); }
   bool KeyCompareLessThan(const Monster *o) const { return *name() < *o->name(); }
   int KeyCompareWithValue(const char *val) const { return strcmp(name()->c_str(), val); }
   const flatbuffers::Vector<uint8_t> *inventory() const { return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_INVENTORY); }

@@ -123,8 +123,8 @@ struct Monster FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool mutate_mana(int16_t _mana) { return SetField(VT_MANA, _mana); }
   int16_t hp() const { return GetField<int16_t>(VT_HP, 100); }
   bool mutate_hp(int16_t _hp) { return SetField(VT_HP, _hp); }
-  const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
-  flatbuffers::String *mutable_name() { return GetPointer<flatbuffers::String *>(VT_NAME); }
+  const flatbuffers::String *name() const { return GetString<const flatbuffers::String *>(VT_NAME); }
+  flatbuffers::String *mutable_name() { return GetString<flatbuffers::String *>(VT_NAME); }
   const flatbuffers::Vector<uint8_t> *inventory() const { return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_INVENTORY); }
   flatbuffers::Vector<uint8_t> *mutable_inventory() { return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_INVENTORY); }
   Color color() const { return static_cast<Color>(GetField<int8_t>(VT_COLOR, 2)); }
@@ -224,8 +224,8 @@ struct Weapon FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_NAME = 4,
     VT_DAMAGE = 6
   };
-  const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
-  flatbuffers::String *mutable_name() { return GetPointer<flatbuffers::String *>(VT_NAME); }
+  const flatbuffers::String *name() const { return GetString<const flatbuffers::String *>(VT_NAME); }
+  flatbuffers::String *mutable_name() { return GetString<flatbuffers::String *>(VT_NAME); }
   int16_t damage() const { return GetField<int16_t>(VT_DAMAGE, 0); }
   bool mutate_damage(int16_t _damage) { return SetField(VT_DAMAGE, _damage); }
   bool Verify(flatbuffers::Verifier &verifier) const {

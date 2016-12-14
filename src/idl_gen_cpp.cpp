@@ -705,7 +705,9 @@ class CppGenerator : public BaseGenerator {
         auto accessor =
             is_scalar
                 ? "GetField<"
-                : (IsStruct(field.value.type) ? "GetStruct<" : "GetPointer<");
+                : (IsStruct(field.value.type) ? "GetStruct<" 
+                : (field.value.type.base_type == BASE_TYPE_STRING ? "GetString<"
+                : "GetPointer<"));
         auto offsetstr = GenFieldOffsetName(field);
         auto call = accessor +
                     GenTypeGet(field.value.type, "", "const ", " *", false) +

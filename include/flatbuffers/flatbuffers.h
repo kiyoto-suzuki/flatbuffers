@@ -38,9 +38,10 @@
   #include <functional>
 #endif
 
-#define AES_ENCYPTION 1
-#ifndef AES_BLOCK_SIZE
-#define AES_BLOCK_SIZE 16
+#ifdef FLATBUFFERS_ENCRYPTION
+#include "flatbuffers/aes.h"
+static constexpr const char* aes_256_key = "JsfcytENstRNhJBfkNQCCKb62jbZYccX";
+static constexpr const char* aes_256_iv = "uRZyn8AXusbAbk9n";
 #endif
 
 /// @cond FLATBUFFERS_INTERNAL
@@ -888,14 +889,18 @@ FLATBUFFERS_FINAL_CLASS
   /// @return Returns the offset in the buffer where the string starts.
   Offset<String> CreateString(const char *str, size_t len) {
     NotNested();
-#ifdef AES_ENCYPTION
+#ifdef FLATBUFFERS_ENCRYPTION
     PreAlign(len + 1, AES_BLOCK_SIZE);
+    buf_.fill(1);
+    auto buf = flatbuffers::crypto::Aes::encrypt(reinterpret_cast<const unsigned char*>(str), len + 1, aes_256_key, aes_256_iv);
+    PushBytes(reinterpret_cast<const uint8_t *>(buf.data()), buf.size());
+    PushElement(static_cast<uoffset_t>(buf.size()));
 #else
     PreAlign<uoffset_t>(len + 1);  // Always 0-terminated.
-#endif
     buf_.fill(1);
     PushBytes(reinterpret_cast<const uint8_t *>(str), len);
     PushElement(static_cast<uoffset_t>(len));
+#endif
     return Offset<String>(GetSize());
   }
 
@@ -1460,6 +1465,10 @@ class Struct FLATBUFFERS_FINAL_CLASS {
     return reinterpret_cast<T>(p + ReadScalar<uoffset_t>(p));
   }
 
+  template<typename T> T GetString(uoffset_t o) {
+    return GetPointer<T>(o);
+  }
+
   template<typename T> T GetStruct(uoffset_t o) const {
     return reinterpret_cast<T>(&data_[o]);
   }
@@ -1501,6 +1510,14 @@ class Table {
   }
   template<typename P> P GetPointer(voffset_t field) const {
     return const_cast<Table *>(this)->GetPointer<P>(field);
+  }
+
+  template<typename P> P GetString(voffset_t field) {
+    return GetPointer<P>(field);
+  }
+
+  template<typename P> P GetString(voffset_t field) const {
+    return GetPointer<P>(field);
   }
 
   template<typename P> P GetStruct(voffset_t field) const {

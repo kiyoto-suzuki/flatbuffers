@@ -487,6 +487,22 @@ class CppGenerator : public BaseGenerator {
     if (enum_def.is_union) {
       code += UnionVerifySignature(enum_def) + ";\n\n";
     }
+
+    // Generate a generate vector tables for enum values. ex.) enumTypeList
+    static const int kMaxSparseness2 = 100;
+    if (range / static_cast<int64_t>(enum_def.vals.vec.size()) < kMaxSparseness2) {
+      code += "static const std::vector<" + enum_def.name + "> " +  enum_def.name + "List = {\n";
+      for (auto it = enum_def.vals.vec.begin();
+           it != enum_def.vals.vec.end();
+           ++it) {
+        auto &ev = **it;
+        if (ev.value == 0 && ev.name == "NONE") continue; // skip 0 value and "NONE" enum name.
+        GenComment(ev.doc_comment, code_ptr, nullptr, "  ");
+        code += "  " + enum_def.name + "::" + GenEnumVal(enum_def, ev.name, parser_.opts) + ",\n";
+      }
+
+      code += "}; \n\n";
+    }
   }
 
   void GenUnionPost(EnumDef &enum_def, std::string *code_ptr) {

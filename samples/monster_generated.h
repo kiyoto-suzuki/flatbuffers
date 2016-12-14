@@ -31,6 +31,12 @@ inline const char **EnumNamesColor() {
 
 inline const char *EnumNameColor(Color e) { return EnumNamesColor()[static_cast<int>(e)]; }
 
+static const std::vector<Color> ColorList = {
+  Color::Color_Red,
+  Color::Color_Green,
+  Color::Color_Blue,
+}; 
+
 enum Equipment {
   Equipment_NONE = 0,
   Equipment_Weapon = 1,
@@ -62,17 +68,22 @@ inline const char *EnumNameEquipment(Equipment e) { return EnumNamesEquipment()[
 
 inline bool VerifyEquipment(flatbuffers::Verifier &verifier, const void *union_obj, Equipment type);
 
-MANUALLY_ALIGNED_STRUCT(4) Vec3 FLATBUFFERS_FINAL_CLASS {
+static const std::vector<Equipment> EquipmentList = {
+  Equipment::Equipment_Weapon,
+}; 
+
+MANUALLY_ALIGNED_STRUCT(16) Vec3 FLATBUFFERS_FINAL_CLASS {
  private:
   float x_;
   float y_;
   float z_;
+  int32_t __padding0;
 
  public:
   Vec3() { memset(this, 0, sizeof(Vec3)); }
   Vec3(const Vec3 &_o) { memcpy(this, &_o, sizeof(Vec3)); }
   Vec3(float _x, float _y, float _z)
-    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)), z_(flatbuffers::EndianScalar(_z)) { }
+    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)), z_(flatbuffers::EndianScalar(_z)), __padding0(0) { (void)__padding0; }
 
   float x() const { return flatbuffers::EndianScalar(x_); }
   void mutate_x(float _x) { flatbuffers::WriteScalar(&x_, _x); }
@@ -81,7 +92,7 @@ MANUALLY_ALIGNED_STRUCT(4) Vec3 FLATBUFFERS_FINAL_CLASS {
   float z() const { return flatbuffers::EndianScalar(z_); }
   void mutate_z(float _z) { flatbuffers::WriteScalar(&z_, _z); }
 };
-STRUCT_END(Vec3, 12);
+STRUCT_END(Vec3, 16);
 
 struct MonsterT : public flatbuffers::NativeTable {
   std::unique_ptr<Vec3> pos;

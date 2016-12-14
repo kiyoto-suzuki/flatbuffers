@@ -224,7 +224,11 @@ struct Definition {
 };
 
 struct FieldDef : public Definition {
+#ifdef AES_ENCYPTION
+  FieldDef() : deprecated(false), required(false), key(false), padding(AES_BLOCK_SIZE) {}
+#else
   FieldDef() : deprecated(false), required(false), key(false), padding(0) {}
+#endif
 
   Offset<reflection::Field> Serialize(FlatBufferBuilder *builder, uint16_t id,
                                       const Parser &parser) const;
@@ -243,7 +247,11 @@ struct StructDef : public Definition {
       predecl(true),
       sortbysize(true),
       has_key(false),
+#if AES_ENCYPTION
+      minalign(AES_BLOCK_SIZE),
+#else
       minalign(1),
+#endif
       bytesize(0)
     {}
 

@@ -38,6 +38,11 @@
   #include <functional>
 #endif
 
+#define AES_ENCYPTION 1
+#ifndef AES_BLOCK_SIZE
+#define AES_BLOCK_SIZE 16
+#endif
+
 /// @cond FLATBUFFERS_INTERNAL
 #if __cplusplus <= 199711L && \
     (!defined(_MSC_VER) || _MSC_VER < 1600) && \
@@ -197,6 +202,16 @@ template<typename T> T ReadScalar(const void *p) {
 
 template<typename T> void WriteScalar(void *p, T t) {
   *reinterpret_cast<T *>(p) = EndianScalar(t);
+}
+
+template<typename T> T DecryptScalar(const void* p) {
+  // TODO
+  return ReadScalar<T>(p);
+}
+
+template<typename T> void EncryptScalar(void *p, T t) {
+  // TODO
+  WriteScalar<T>(p, t);
 }
 
 template<typename T> size_t AlignOf() {
@@ -873,7 +888,11 @@ FLATBUFFERS_FINAL_CLASS
   /// @return Returns the offset in the buffer where the string starts.
   Offset<String> CreateString(const char *str, size_t len) {
     NotNested();
+#ifdef AES_ENCYPTION
+    PreAlign(len + 1, AES_BLOCK_SIZE);
+#else
     PreAlign<uoffset_t>(len + 1);  // Always 0-terminated.
+#endif
     buf_.fill(1);
     PushBytes(reinterpret_cast<const uint8_t *>(str), len);
     PushElement(static_cast<uoffset_t>(len));

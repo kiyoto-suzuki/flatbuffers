@@ -90,24 +90,26 @@ static const std::vector<Any> AnyList = {
   Any::Any_MyGame_Example2_Monster,
 }; 
 
-MANUALLY_ALIGNED_STRUCT(2) Test FLATBUFFERS_FINAL_CLASS {
+MANUALLY_ALIGNED_STRUCT(16) Test FLATBUFFERS_FINAL_CLASS {
  private:
   int16_t a_;
   int8_t b_;
   int8_t __padding0;
+  int32_t __padding1;
+  int64_t __padding2;
 
  public:
   Test() { memset(this, 0, sizeof(Test)); }
   Test(const Test &_o) { memcpy(this, &_o, sizeof(Test)); }
   Test(int16_t _a, int8_t _b)
-    : a_(flatbuffers::EndianScalar(_a)), b_(flatbuffers::EndianScalar(_b)), __padding0(0) { (void)__padding0; }
+    : a_(flatbuffers::EndianScalar(_a)), b_(flatbuffers::EndianScalar(_b)), __padding0(0), __padding1(0), __padding2(0) { (void)__padding0; (void)__padding1; (void)__padding2; }
 
   int16_t a() const { return flatbuffers::EndianScalar(a_); }
   void mutate_a(int16_t _a) { flatbuffers::WriteScalar(&a_, _a); }
   int8_t b() const { return flatbuffers::EndianScalar(b_); }
   void mutate_b(int8_t _b) { flatbuffers::WriteScalar(&b_, _b); }
 };
-STRUCT_END(Test, 4);
+STRUCT_END(Test, 16);
 
 MANUALLY_ALIGNED_STRUCT(16) Vec3 FLATBUFFERS_FINAL_CLASS {
  private:
@@ -118,14 +120,15 @@ MANUALLY_ALIGNED_STRUCT(16) Vec3 FLATBUFFERS_FINAL_CLASS {
   double test1_;
   int8_t test2_;
   int8_t __padding1;
-  Test test3_;
   int16_t __padding2;
+  int32_t __padding3;
+  Test test3_;
 
  public:
   Vec3() { memset(this, 0, sizeof(Vec3)); }
   Vec3(const Vec3 &_o) { memcpy(this, &_o, sizeof(Vec3)); }
   Vec3(float _x, float _y, float _z, double _test1, Color _test2, const Test &_test3)
-    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)), z_(flatbuffers::EndianScalar(_z)), __padding0(0), test1_(flatbuffers::EndianScalar(_test1)), test2_(flatbuffers::EndianScalar(static_cast<int8_t>(_test2))), __padding1(0), test3_(_test3), __padding2(0) { (void)__padding0; (void)__padding1; (void)__padding2; }
+    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)), z_(flatbuffers::EndianScalar(_z)), __padding0(0), test1_(flatbuffers::EndianScalar(_test1)), test2_(flatbuffers::EndianScalar(static_cast<int8_t>(_test2))), __padding1(0), __padding2(0), __padding3(0), test3_(_test3) { (void)__padding0; (void)__padding1; (void)__padding2; (void)__padding3; }
 
   float x() const { return flatbuffers::EndianScalar(x_); }
   void mutate_x(float _x) { flatbuffers::WriteScalar(&x_, _x); }
@@ -140,7 +143,7 @@ MANUALLY_ALIGNED_STRUCT(16) Vec3 FLATBUFFERS_FINAL_CLASS {
   const Test &test3() const { return test3_; }
   Test &mutable_test3() { return test3_; }
 };
-STRUCT_END(Vec3, 32);
+STRUCT_END(Vec3, 48);
 
 }  // namespace Example
 

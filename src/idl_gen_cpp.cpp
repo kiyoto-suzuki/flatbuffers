@@ -699,8 +699,9 @@ class CppGenerator : public BaseGenerator {
       if (!field.deprecated) {  // Deprecated fields won't be accessible.
         auto is_scalar = IsScalar(field.value.type.base_type);
         GenComment(field.doc_comment, code_ptr, nullptr, "  ");
-        code += "  " + GenTypeGet(field.value.type, " ", "const ", " *", true);
-        code += field.name + "() const { return ";
+        code += field.value.type.base_type == BASE_TYPE_STRING 
+          ?  "  " + GenTypeGet(field.value.type, " ", "const std::shared_ptr<", "> ", true) + field.name + "() const { return "
+          :  "  " + GenTypeGet(field.value.type, " ", "const ", " *", true) + field.name + "() const { return ";
         // Call a different accessor for pointers, that indirects.
         auto accessor =
             is_scalar
@@ -709,9 +710,9 @@ class CppGenerator : public BaseGenerator {
                 : (field.value.type.base_type == BASE_TYPE_STRING ? "GetString<"
                 : "GetPointer<"));
         auto offsetstr = GenFieldOffsetName(field);
-        auto call = accessor +
-                    GenTypeGet(field.value.type, "", "const ", " *", false) +
-                    ">(" + offsetstr;
+        auto call = field.value.type.base_type == BASE_TYPE_STRING 
+          ? accessor + GenTypeGet(field.value.type, "", "const std::shared_ptr<", ">", false) + ">(" + offsetstr
+          : accessor + GenTypeGet(field.value.type, "", "const ", " *", false) + ">(" + offsetstr;
         // Default value as second arg for non-pointer types.
         if (IsScalar(field.value.type.base_type))
           call += ", " + GenDefaultConstant(field);
@@ -727,7 +728,9 @@ class CppGenerator : public BaseGenerator {
             code += GenUnderlyingCast(field, false, "_" + field.name);
             code += "); }\n";
           } else {
-            auto type = GenTypeGet(field.value.type, " ", "", " *", true);
+            auto type = field.value.type.base_type == BASE_TYPE_STRING 
+              ?  GenTypeGet(field.value.type, " ", "std::shared_ptr<", "> ", true)
+              :  GenTypeGet(field.value.type, " ", "", " *", true);
             code += "  " + type + "mutable_" + field.name + "() { return ";
             code += GenUnderlyingCast(field, true,
                                       accessor + type + ">(" + offsetstr + ")");

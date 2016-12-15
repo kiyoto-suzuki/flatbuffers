@@ -96,10 +96,10 @@ struct KeyValue FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_KEY = 4,
     VT_VALUE = 6
   };
-  const flatbuffers::String *key() const { return GetPointer<const flatbuffers::String *>(VT_KEY); }
+  const std::shared_ptr<flatbuffers::String> key() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_KEY); }
   bool KeyCompareLessThan(const KeyValue *o) const { return *key() < *o->key(); }
   int KeyCompareWithValue(const char *val) const { return strcmp(key()->c_str(), val); }
-  const flatbuffers::String *value() const { return GetPointer<const flatbuffers::String *>(VT_VALUE); }
+  const std::shared_ptr<flatbuffers::String> value() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_VALUE); }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_KEY) &&
@@ -145,7 +145,7 @@ struct EnumVal FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_VALUE = 6,
     VT_OBJECT = 8
   };
-  const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
+  const std::shared_ptr<flatbuffers::String> name() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_NAME); }
   int64_t value() const { return GetField<int64_t>(VT_VALUE, 0); }
   bool KeyCompareLessThan(const EnumVal *o) const { return value() < o->value(); }
   int KeyCompareWithValue(int64_t val) const { return value() < val ? -1 : value() > val; }
@@ -202,7 +202,7 @@ struct Enum FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_UNDERLYING_TYPE = 10,
     VT_ATTRIBUTES = 12
   };
-  const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
+  const std::shared_ptr<flatbuffers::String> name() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_NAME); }
   bool KeyCompareLessThan(const Enum *o) const { return *name() < *o->name(); }
   int KeyCompareWithValue(const char *val) const { return strcmp(name()->c_str(), val); }
   const flatbuffers::Vector<flatbuffers::Offset<EnumVal>> *values() const { return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<EnumVal>> *>(VT_VALUES); }
@@ -282,7 +282,7 @@ struct Field FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_KEY = 20,
     VT_ATTRIBUTES = 22
   };
-  const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
+  const std::shared_ptr<flatbuffers::String> name() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_NAME); }
   bool KeyCompareLessThan(const Field *o) const { return *name() < *o->name(); }
   int KeyCompareWithValue(const char *val) const { return strcmp(name()->c_str(), val); }
   const Type *type() const { return GetPointer<const Type *>(VT_TYPE); }
@@ -385,7 +385,7 @@ struct Object FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_BYTESIZE = 12,
     VT_ATTRIBUTES = 14
   };
-  const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
+  const std::shared_ptr<flatbuffers::String> name() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_NAME); }
   bool KeyCompareLessThan(const Object *o) const { return *name() < *o->name(); }
   int KeyCompareWithValue(const char *val) const { return strcmp(name()->c_str(), val); }
   const flatbuffers::Vector<flatbuffers::Offset<Field>> *fields() const { return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Field>> *>(VT_FIELDS); }
@@ -466,8 +466,8 @@ struct Schema FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   };
   const flatbuffers::Vector<flatbuffers::Offset<Object>> *objects() const { return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Object>> *>(VT_OBJECTS); }
   const flatbuffers::Vector<flatbuffers::Offset<Enum>> *enums() const { return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Enum>> *>(VT_ENUMS); }
-  const flatbuffers::String *file_ident() const { return GetPointer<const flatbuffers::String *>(VT_FILE_IDENT); }
-  const flatbuffers::String *file_ext() const { return GetPointer<const flatbuffers::String *>(VT_FILE_EXT); }
+  const std::shared_ptr<flatbuffers::String> file_ident() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_FILE_IDENT); }
+  const std::shared_ptr<flatbuffers::String> file_ext() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_FILE_EXT); }
   const Object *root_table() const { return GetPointer<const Object *>(VT_ROOT_TABLE); }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&

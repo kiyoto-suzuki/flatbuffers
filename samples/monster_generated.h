@@ -72,18 +72,17 @@ static const std::vector<Equipment> EquipmentList = {
   Equipment::Equipment_Weapon,
 }; 
 
-MANUALLY_ALIGNED_STRUCT(16) Vec3 FLATBUFFERS_FINAL_CLASS {
+MANUALLY_ALIGNED_STRUCT(4) Vec3 FLATBUFFERS_FINAL_CLASS {
  private:
   float x_;
   float y_;
   float z_;
-  int32_t __padding0;
 
  public:
   Vec3() { memset(this, 0, sizeof(Vec3)); }
   Vec3(const Vec3 &_o) { memcpy(this, &_o, sizeof(Vec3)); }
   Vec3(float _x, float _y, float _z)
-    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)), z_(flatbuffers::EndianScalar(_z)), __padding0(0) { (void)__padding0; }
+    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)), z_(flatbuffers::EndianScalar(_z)) { }
 
   float x() const { return flatbuffers::EndianScalar(x_); }
   void mutate_x(float _x) { flatbuffers::WriteScalar(&x_, _x); }
@@ -92,7 +91,7 @@ MANUALLY_ALIGNED_STRUCT(16) Vec3 FLATBUFFERS_FINAL_CLASS {
   float z() const { return flatbuffers::EndianScalar(z_); }
   void mutate_z(float _z) { flatbuffers::WriteScalar(&z_, _z); }
 };
-STRUCT_END(Vec3, 16);
+STRUCT_END(Vec3, 12);
 
 struct MonsterT : public flatbuffers::NativeTable {
   std::unique_ptr<Vec3> pos;
@@ -123,8 +122,8 @@ struct Monster FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool mutate_mana(int16_t _mana) { return SetField(VT_MANA, _mana); }
   int16_t hp() const { return GetField<int16_t>(VT_HP, 100); }
   bool mutate_hp(int16_t _hp) { return SetField(VT_HP, _hp); }
-  const flatbuffers::String *name() const { return GetString<const flatbuffers::String *>(VT_NAME); }
-  flatbuffers::String *mutable_name() { return GetString<flatbuffers::String *>(VT_NAME); }
+  const std::shared_ptr<flatbuffers::String> name() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_NAME); }
+  std::shared_ptr<flatbuffers::String> mutable_name() { return GetString<std::shared_ptr<flatbuffers::String> >(VT_NAME); }
   const flatbuffers::Vector<uint8_t> *inventory() const { return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_INVENTORY); }
   flatbuffers::Vector<uint8_t> *mutable_inventory() { return GetPointer<flatbuffers::Vector<uint8_t> *>(VT_INVENTORY); }
   Color color() const { return static_cast<Color>(GetField<int8_t>(VT_COLOR, 2)); }
@@ -224,8 +223,8 @@ struct Weapon FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_NAME = 4,
     VT_DAMAGE = 6
   };
-  const flatbuffers::String *name() const { return GetString<const flatbuffers::String *>(VT_NAME); }
-  flatbuffers::String *mutable_name() { return GetString<flatbuffers::String *>(VT_NAME); }
+  const std::shared_ptr<flatbuffers::String> name() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_NAME); }
+  std::shared_ptr<flatbuffers::String> mutable_name() { return GetString<std::shared_ptr<flatbuffers::String> >(VT_NAME); }
   int16_t damage() const { return GetField<int16_t>(VT_DAMAGE, 0); }
   bool mutate_damage(int16_t _damage) { return SetField(VT_DAMAGE, _damage); }
   bool Verify(flatbuffers::Verifier &verifier) const {

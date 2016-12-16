@@ -448,10 +448,23 @@ class String : public std::string {
 public:
   using std::string::string;
 
-  std::string str() const { return std::string(c_str(), size()); }
+  std::string str() const { return std::string(c_str()); }
 
   const uint8_t *Data() const { return reinterpret_cast<const uint8_t *>(data()); }
   uoffset_t Length() const { return static_cast<uoffset_t>(size()); }
+
+  bool operator ==(const std::string &o) const {
+    return strcmp(c_str(), o.c_str()) == 0;
+  }
+  bool operator ==(const String &o) const {
+    return strcmp(c_str(), o.c_str()) == 0;
+  }
+  bool operator !String=(const std::string &o) const {
+    return strcmp(c_str(), o.c_str()) != 0;
+  }
+  bool operator !=(const String &o) const {
+    return strcmp(c_str(), o.c_str()) != 0;
+  }
 };
 #else
 struct String : public Vector<char> {
@@ -650,7 +663,8 @@ class Xxtea {
     auto out = std::make_shared<String>();
     if (v != nullptr) {
       out->resize(v->size() + FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT + PaddingBytes(v->size(), FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT));
-      xxtea_ubyte_decrypt(reinterpret_cast<const uint8_t *>(v->Data()), v->size(), (uint8_t *)out->data(), out->size(), KeyArray());
+      size_t out_len = xxtea_ubyte_decrypt(reinterpret_cast<const uint8_t *>(v->Data()), v->size(), (uint8_t *)out->data(), out->size(), KeyArray());
+      out->resize(out_len);
     }
     return out;
   }

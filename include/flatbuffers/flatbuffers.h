@@ -648,8 +648,10 @@ class Xxtea {
 
   static inline std::shared_ptr<String> DecryptString(const Vector<char>* v) {
     auto out = std::make_shared<String>();
-    out->resize(v->size() + FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT + PaddingBytes(v->size(), FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT));
-    xxtea_ubyte_decrypt(reinterpret_cast<const uint8_t *>(v->Data()), v->size(), (uint8_t *)out->data(), out->size(), KeyArray());
+    if (v != nullptr) {
+      out->resize(v->size() + FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT + PaddingBytes(v->size(), FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT));
+      xxtea_ubyte_decrypt(reinterpret_cast<const uint8_t *>(v->Data()), v->size(), (uint8_t *)out->data(), out->size(), KeyArray());
+    }
     return out;
   }
 };

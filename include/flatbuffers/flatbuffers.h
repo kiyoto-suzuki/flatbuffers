@@ -1396,7 +1396,7 @@ class Verifier FLATBUFFERS_FINAL_CLASS {
   // Verify a pointer (may be NULL) to string.
 #ifdef FLATBUFFERS_ENCRYPTION
   bool Verify(const std::shared_ptr<String> str) const {
-    return !str;
+    return str;
   }
 #else
   bool Verify(const String *str) const {

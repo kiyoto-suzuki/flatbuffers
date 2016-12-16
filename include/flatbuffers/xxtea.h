@@ -23,29 +23,12 @@
 extern "C" {
 #endif
 
-/**
- * Function: xxtea_encrypt
- * @data:    Data to be encrypted
- * @len:     Length of the data to be encrypted
- * @key:     Symmetric key
- * @out_len: Pointer to output length variable
- * Returns:  Encrypted data or %NULL on failure
- *
- * Caller is responsible for freeing the returned buffer.
- */
-void * xxtea_encrypt(const void * data, size_t len, const void * key, size_t * out_len);
+size_t xxtea_to_key_array(const char * key, size_t len, uint32_t* key_array, size_t key_array_size);
+size_t xxtea_ubyte_encrypt(const uint8_t * data, size_t len, uint8_t* out, size_t out_size, const uint32_t * key_array);
+size_t xxtea_ubyte_decrypt(const uint8_t * data, size_t len, uint8_t* out, size_t out_size, const uint32_t * key_array);
 
-/**
- * Function: xxtea_decrypt
- * @data:    Data to be decrypted
- * @len:     Length of the data to be decrypted
- * @key:     Symmetric key
- * @out_len: Pointer to output length variable
- * Returns:  Decrypted data or %NULL on failure
- *
- * Caller is responsible for freeing the returned buffer.
- */
-void * xxtea_decrypt(const void * data, size_t len, const void * key, size_t * out_len);
+size_t xxtea_encrypt(const void * data, size_t len, uint8_t * out, size_t out_size, const char * key);
+size_t xxtea_decrypt(const void * data, size_t len, uint8_t * out, size_t out_size, const char * key);
 
 #ifdef __cplusplus
 }

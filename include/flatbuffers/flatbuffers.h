@@ -603,7 +603,11 @@ template <typename T> const T* data(const std::vector<T> &v) {
 
 class Xxtea {
  public:
+#ifdef FLATBUFFERS_ENCRYPTION_XXTEA_KEY
+  static constexpr const char* xxtea_key = FLATBUFFERS_ENCRYPTION_XXTEA_KEY;
+#else
   static constexpr const char* xxtea_key = "xjhdgUCPiqyxdq8d";  // 16bytes
+#endif
 
   static inline const char* Key() {
     return xxtea_key;
@@ -1396,7 +1400,7 @@ class Verifier FLATBUFFERS_FINAL_CLASS {
   // Verify a pointer (may be NULL) to string.
 #ifdef FLATBUFFERS_ENCRYPTION
   bool Verify(const std::shared_ptr<String> str) const {
-    return str;
+    return str != nullptr;
   }
 #else
   bool Verify(const String *str) const {

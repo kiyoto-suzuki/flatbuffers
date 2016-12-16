@@ -622,7 +622,6 @@ class Xxtea {
     std::string out;
     out.resize(len + FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT + PaddingBytes(len, FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT));
     size_t out_len = xxtea_ubyte_encrypt(reinterpret_cast<const uint8_t*>(data), len, (uint8_t*)out.data(), out.size(), KeyArray());
-    fprintf(stderr, "Encrypt %lu -> %lu(%lu) %p\n", len, out_len, out.size(), reinterpret_cast<const void *>(out.data()));
     out.resize(out_len);
     return out;
   }
@@ -639,18 +638,14 @@ class Xxtea {
     }
     std::string out;
     out.resize(enc_len + FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT + PaddingBytes(enc_len, FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT));
-    size_t out_len = xxtea_ubyte_decrypt(reinterpret_cast<const uint8_t*>(data), enc_len, (uint8_t*)out.data(), out.size(), KeyArray());
-    printf("DecryptScalar: enc_len = %lu -> out_len = %lu\n", enc_len, out_len);
+    xxtea_ubyte_decrypt(reinterpret_cast<const uint8_t*>(data), enc_len, (uint8_t*)out.data(), out.size(), KeyArray());
     return out;
   }
 
   static inline std::shared_ptr<String> DecryptString(const Vector<char>* v) {
     auto out = std::make_shared<String>();
     out->resize(v->size() + FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT + PaddingBytes(v->size(), FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT));
-    size_t out_len = xxtea_ubyte_decrypt(reinterpret_cast<const uint8_t *>(v->Data()), v->size(), (uint8_t *)out->data(), out->size(), KeyArray());
-    printf("DecryptString v->Data() = %p v->size() = %u out->data() = %p, out->size() = %lu out_len = %lu\n", 
-        reinterpret_cast<const void *>(v->Data()), v->size(),
-        reinterpret_cast<const void *>(out->data()), out->size(), out_len);
+    xxtea_ubyte_decrypt(reinterpret_cast<const uint8_t *>(v->Data()), v->size(), (uint8_t *)out->data(), out->size(), KeyArray());
     return out;
   }
 };
@@ -961,7 +956,6 @@ FLATBUFFERS_FINAL_CLASS
   Offset<String> CreateString(const char *str, size_t len) {
     NotNested();
 #ifdef FLATBUFFERS_ENCRYPTION
-    fprintf(stderr, "CreateString: '%s'\n", str);
     auto buf = Xxtea::Encrypt(reinterpret_cast<const void*>(str), len + 1);
     PreAlign<uoffset_t>(buf.size() + 1);
     buf_.fill(1);

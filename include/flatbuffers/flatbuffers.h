@@ -38,9 +38,8 @@
   #include <functional>
 #endif
 
-#define AES_ENCYPTION 1
-#ifndef AES_BLOCK_SIZE
-#define AES_BLOCK_SIZE 16
+#ifdef FLATBUFFERS_ENCRYPTION
+#include "flatbuffers/xxtea.h"
 #endif
 
 /// @cond FLATBUFFERS_INTERNAL
@@ -202,16 +201,6 @@ template<typename T> T ReadScalar(const void *p) {
 
 template<typename T> void WriteScalar(void *p, T t) {
   *reinterpret_cast<T *>(p) = EndianScalar(t);
-}
-
-template<typename T> T DecryptScalar(const void* p) {
-  // TODO
-  return ReadScalar<T>(p);
-}
-
-template<typename T> void EncryptScalar(void *p, T t) {
-  // TODO
-  WriteScalar<T>(p, t);
 }
 
 template<typename T> size_t AlignOf() {
@@ -454,6 +443,30 @@ template<typename T> static inline size_t VectorLength(const Vector<T> *v) {
   return v ? v->Length() : 0;
 }
 
+#ifdef FLATBUFFERS_ENCRYPTION
+class String : public std::string {
+public:
+  using std::string::string;
+
+  std::string str() const { return std::string(c_str()); }
+
+  const uint8_t *Data() const { return reinterpret_cast<const uint8_t *>(data()); }
+  uoffset_t Length() const { return static_cast<uoffset_t>(size()); }
+
+  bool operator ==(const std::string &o) const {
+    return strcmp(c_str(), o.c_str()) == 0;
+  }
+  bool operator ==(const String &o) const {
+    return strcmp(c_str(), o.c_str()) == 0;
+  }
+  bool operator !String=(const std::string &o) const {
+    return strcmp(c_str(), o.c_str()) != 0;
+  }
+  bool operator !=(const String &o) const {
+    return strcmp(c_str(), o.c_str()) != 0;
+  }
+};
+#else
 struct String : public Vector<char> {
   const char *c_str() const { return reinterpret_cast<const char *>(Data()); }
   std::string str() const { return std::string(c_str(), Length()); }
@@ -462,6 +475,7 @@ struct String : public Vector<char> {
     return strcmp(c_str(), o.c_str()) < 0;
   }
 };
+#endif
 
 // Simple indirection for buffer allocation, to allow this to be overridden
 // with custom allocation (see the FlatBufferBuilder constructor).
@@ -597,6 +611,66 @@ template <typename T> const T* data(const std::vector<T> &v) {
 }
 /// @endcond
 
+#ifdef FLATBUFFERS_ENCRYPTION
+#define FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT 8
+
+class Xxtea {
+ public:
+#ifdef FLATBUFFERS_ENCRYPTION_XXTEA_KEY
+  static constexpr const char* xxtea_key = FLATBUFFERS_ENCRYPTION_XXTEA_KEY;
+#else
+  static constexpr const char* xxtea_key = "xjhdgUCPiqyxdq8d";  // 16bytes
+#endif
+
+  static inline const char* Key() {
+    return xxtea_key;
+  }
+
+  static inline uint32_t* KeyArray() {
+    static uint32_t key_array[32];
+    static bool key_array_initialized = false;
+    if (!key_array_initialized) {
+      xxtea_to_key_array(Key(), strlen(Key()), key_array, sizeof(key_array));
+    }
+    return key_array;
+  }
+
+  static inline std::string Encrypt(const void * data, size_t len) {
+    std::string out;
+    out.resize(len + FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT + PaddingBytes(len, FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT));
+    size_t out_len = xxtea_ubyte_encrypt(reinterpret_cast<const uint8_t*>(data), len, (uint8_t*)out.data(), out.size(), KeyArray());
+    out.resize(out_len);
+    return out;
+  }
+
+  static inline std::string DecryptScalar(const void * data, size_t type_len) {
+    // xxtea encrypted size map
+    size_t enc_len;
+    switch (type_len) {
+      case 1: enc_len = 8;  break;
+      case 2: enc_len = 8;  break;
+      case 4: enc_len = 8;  break;
+      case 8: enc_len = 12; break;
+      default: assert(0);   break;
+    }
+    std::string out;
+    out.resize(enc_len + FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT + PaddingBytes(enc_len, FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT));
+    xxtea_ubyte_decrypt(reinterpret_cast<const uint8_t*>(data), enc_len, (uint8_t*)out.data(), out.size(), KeyArray());
+    return out;
+  }
+
+  static inline std::shared_ptr<String> DecryptString(const Vector<char>* v) {
+    auto out = std::make_shared<String>();
+    if (v != nullptr) {
+      out->resize(v->size() + FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT + PaddingBytes(v->size(), FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT));
+      size_t out_len = xxtea_ubyte_decrypt(reinterpret_cast<const uint8_t *>(v->Data()), v->size(), (uint8_t *)out->data(), out->size(), KeyArray());
+      out->resize(out_len);
+    }
+    return out;
+  }
+};
+#endif
+
 /// @addtogroup flatbuffers_cpp_api
 /// @{
 /// @class FlatBufferBuilder
@@ -721,9 +795,9 @@ FLATBUFFERS_FINAL_CLASS
   // Write a single aligned scalar to the buffer
   template<typename T> uoffset_t PushElement(T element) {
     AssertScalarT<T>();
-    T litle_endian_element = EndianScalar(element);
+    T little_endian_element = EndianScalar(element);
     Align(sizeof(T));
-    PushBytes(reinterpret_cast<uint8_t *>(&litle_endian_element), sizeof(T));
+    PushBytes(reinterpret_cast<uint8_t *>(&little_endian_element), sizeof(T));
     return GetSize();
   }
 
@@ -743,13 +817,26 @@ FLATBUFFERS_FINAL_CLASS
   template<typename T> void AddElement(voffset_t field, T e, T def) {
     // We don't serialize values equal to the default.
     if (e == def && !force_defaults_) return;
+#ifdef FLATBUFFERS_ENCRYPTION
+    AssertScalarT<T>();
+    T little_endian_element = EndianScalar(e);
+    auto buf = Xxtea::Encrypt(reinterpret_cast<const void *>(&little_endian_element), sizeof(T));
+    Align(buf.size());
+    PushBytes(reinterpret_cast<const uint8_t *>(buf.data()), buf.size());
+    auto off = GetSize();
+#else
     auto off = PushElement(e);
+#endif
     TrackField(field, off);
   }
 
   template<typename T> void AddOffset(voffset_t field, Offset<T> off) {
     if (!off.o) return;  // An offset of 0 means NULL, don't store.
+#ifdef FLATBUFFERS_ENCRYPTION
+    TrackField(field, PushElement(ReferTo(off.o)));
+#else
     AddElement(field, ReferTo(off.o), static_cast<uoffset_t>(0));
+#endif
   }
 
   template<typename T> void AddStruct(voffset_t field, const T *structptr) {
@@ -888,14 +975,18 @@ FLATBUFFERS_FINAL_CLASS
   /// @return Returns the offset in the buffer where the string starts.
   Offset<String> CreateString(const char *str, size_t len) {
     NotNested();
-#ifdef AES_ENCYPTION
-    PreAlign(len + 1, AES_BLOCK_SIZE);
+#ifdef FLATBUFFERS_ENCRYPTION
+    auto buf = Xxtea::Encrypt(reinterpret_cast<const void*>(str), len + 1);
+    PreAlign<uoffset_t>(buf.size() + 1);
+    buf_.fill(1);
+    PushBytes(reinterpret_cast<const uint8_t *>(buf.data()), buf.size());
+    PushElement(static_cast<uoffset_t>(buf.size()));
 #else
     PreAlign<uoffset_t>(len + 1);  // Always 0-terminated.
-#endif
     buf_.fill(1);
     PushBytes(reinterpret_cast<const uint8_t *>(str), len);
     PushElement(static_cast<uoffset_t>(len));
+#endif
     return Offset<String>(GetSize());
   }
 
@@ -1323,6 +1414,11 @@ class Verifier FLATBUFFERS_FINAL_CLASS {
   }
 
   // Verify a pointer (may be NULL) to string.
+#ifdef FLATBUFFERS_ENCRYPTION
+  bool Verify(const std::shared_ptr<String> str) const {
+    return str != nullptr;
+  }
+#else
   bool Verify(const String *str) const {
     const uint8_t *end;
     return !str ||
@@ -1330,6 +1426,7 @@ class Verifier FLATBUFFERS_FINAL_CLASS {
             Verify(end, 1) &&      // Must have terminator
             Check(*end == '\0'));  // Terminating byte must be 0.
   }
+#endif
 
   // Common code between vectors and strings.
   bool VerifyVector(const uint8_t *vec, size_t elem_size,
@@ -1348,6 +1445,19 @@ class Verifier FLATBUFFERS_FINAL_CLASS {
   }
 
   // Special case for string contents, after the above has been called.
+#ifdef FLATBUFFERS_ENCRYPTION
+  bool VerifyVectorOfStrings(const Vector<Offset<String>> *vec) const {
+      if (vec) {
+        for (uoffset_t i = 0; i < vec->size(); i++) {
+          const uint8_t* p = vec->Data() + sizeof(uoffset_t) * i;
+          auto v = reinterpret_cast<const Vector<char> *>(p + ReadScalar<uoffset_t>(p));
+          auto str = Xxtea::DecryptString(v);
+          if (!Verify(str)) return false;
+        }
+      }
+      return true;
+  }
+#else
   bool VerifyVectorOfStrings(const Vector<Offset<String>> *vec) const {
       if (vec) {
         for (uoffset_t i = 0; i < vec->size(); i++) {
@@ -1356,6 +1466,7 @@ class Verifier FLATBUFFERS_FINAL_CLASS {
       }
       return true;
   }
+#endif
 
   // Special case for table contents, after the above has been called.
   template<typename T> bool VerifyVectorOfTables(const Vector<Offset<T>> *vec) {
@@ -1452,12 +1563,21 @@ template<typename T> struct BufferRef : BufferRefBase {
 class Struct FLATBUFFERS_FINAL_CLASS {
  public:
   template<typename T> T GetField(uoffset_t o) const {
+#if FLATBUFFERS_ENCRYPTION
+    assert(0);  // FIXME encrypted struct not supported
     return ReadScalar<T>(&data_[o]);
+#else
+    return ReadScalar<T>(&data_[o]);
+#endif
   }
 
   template<typename T> T GetPointer(uoffset_t o) const {
     auto p = &data_[o];
     return reinterpret_cast<T>(p + ReadScalar<uoffset_t>(p));
+  }
+
+  template<typename T> T GetString(uoffset_t o) {
+    return GetPointer<T>(o);
   }
 
   template<typename T> T GetStruct(uoffset_t o) const {
@@ -1488,8 +1608,16 @@ class Table {
   }
 
   template<typename T> T GetField(voffset_t field, T defaultval) const {
+#ifdef FLATBUFFERS_ENCRYPTION
+    auto field_offset = GetOptionalFieldOffset(field);
+    if (!field_offset) return defaultval;
+    auto buf = Xxtea::DecryptScalar(reinterpret_cast<const void *>(data_ + field_offset), sizeof(T));
+    T dest = *reinterpret_cast<const T *>(buf.data());
+    return dest;
+#else
     auto field_offset = GetOptionalFieldOffset(field);
     return field_offset ? ReadScalar<T>(data_ + field_offset) : defaultval;
+#endif
   }
 
   template<typename P> P GetPointer(voffset_t field) {
@@ -1501,6 +1629,21 @@ class Table {
   }
   template<typename P> P GetPointer(voffset_t field) const {
     return const_cast<Table *>(this)->GetPointer<P>(field);
+  }
+
+  template<typename P> P GetString(voffset_t field) {
+#ifdef FLATBUFFERS_ENCRYPTION
+    return static_cast<P>(Xxtea::DecryptString(GetPointer<Vector<char> *>(field)));
+#else
+    return GetPointer<P>(field);
+#endif
+  }
+  template<typename P> P GetString(voffset_t field) const {
+#ifdef FLATBUFFERS_ENCRYPTION
+    return static_cast<P>(Xxtea::DecryptString(GetPointer<Vector<char> *>(field)));
+#else
+    return GetPointer<P>(field);
+#endif
   }
 
   template<typename P> P GetStruct(voffset_t field) const {

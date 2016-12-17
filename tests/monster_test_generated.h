@@ -90,26 +90,24 @@ static const std::vector<Any> AnyList = {
   Any::Any_MyGame_Example2_Monster,
 }; 
 
-MANUALLY_ALIGNED_STRUCT(16) Test FLATBUFFERS_FINAL_CLASS {
+MANUALLY_ALIGNED_STRUCT(2) Test FLATBUFFERS_FINAL_CLASS {
  private:
   int16_t a_;
   int8_t b_;
   int8_t __padding0;
-  int32_t __padding1;
-  int64_t __padding2;
 
  public:
   Test() { memset(this, 0, sizeof(Test)); }
   Test(const Test &_o) { memcpy(this, &_o, sizeof(Test)); }
   Test(int16_t _a, int8_t _b)
-    : a_(flatbuffers::EndianScalar(_a)), b_(flatbuffers::EndianScalar(_b)), __padding0(0), __padding1(0), __padding2(0) { (void)__padding0; (void)__padding1; (void)__padding2; }
+    : a_(flatbuffers::EndianScalar(_a)), b_(flatbuffers::EndianScalar(_b)), __padding0(0) { (void)__padding0; }
 
   int16_t a() const { return flatbuffers::EndianScalar(a_); }
   void mutate_a(int16_t _a) { flatbuffers::WriteScalar(&a_, _a); }
   int8_t b() const { return flatbuffers::EndianScalar(b_); }
   void mutate_b(int8_t _b) { flatbuffers::WriteScalar(&b_, _b); }
 };
-STRUCT_END(Test, 16);
+STRUCT_END(Test, 4);
 
 MANUALLY_ALIGNED_STRUCT(16) Vec3 FLATBUFFERS_FINAL_CLASS {
  private:
@@ -120,15 +118,14 @@ MANUALLY_ALIGNED_STRUCT(16) Vec3 FLATBUFFERS_FINAL_CLASS {
   double test1_;
   int8_t test2_;
   int8_t __padding1;
-  int16_t __padding2;
-  int32_t __padding3;
   Test test3_;
+  int16_t __padding2;
 
  public:
   Vec3() { memset(this, 0, sizeof(Vec3)); }
   Vec3(const Vec3 &_o) { memcpy(this, &_o, sizeof(Vec3)); }
   Vec3(float _x, float _y, float _z, double _test1, Color _test2, const Test &_test3)
-    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)), z_(flatbuffers::EndianScalar(_z)), __padding0(0), test1_(flatbuffers::EndianScalar(_test1)), test2_(flatbuffers::EndianScalar(static_cast<int8_t>(_test2))), __padding1(0), __padding2(0), __padding3(0), test3_(_test3) { (void)__padding0; (void)__padding1; (void)__padding2; (void)__padding3; }
+    : x_(flatbuffers::EndianScalar(_x)), y_(flatbuffers::EndianScalar(_y)), z_(flatbuffers::EndianScalar(_z)), __padding0(0), test1_(flatbuffers::EndianScalar(_test1)), test2_(flatbuffers::EndianScalar(static_cast<int8_t>(_test2))), __padding1(0), test3_(_test3), __padding2(0) { (void)__padding0; (void)__padding1; (void)__padding2; }
 
   float x() const { return flatbuffers::EndianScalar(x_); }
   void mutate_x(float _x) { flatbuffers::WriteScalar(&x_, _x); }
@@ -143,7 +140,7 @@ MANUALLY_ALIGNED_STRUCT(16) Vec3 FLATBUFFERS_FINAL_CLASS {
   const Test &test3() const { return test3_; }
   Test &mutable_test3() { return test3_; }
 };
-STRUCT_END(Vec3, 48);
+STRUCT_END(Vec3, 32);
 
 }  // namespace Example
 
@@ -233,8 +230,8 @@ struct Stat FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_VAL = 6,
     VT_COUNT = 8
   };
-  const flatbuffers::String *id() const { return GetPointer<const flatbuffers::String *>(VT_ID); }
-  flatbuffers::String *mutable_id() { return GetPointer<flatbuffers::String *>(VT_ID); }
+  const std::shared_ptr<flatbuffers::String> id() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_ID); }
+  std::shared_ptr<flatbuffers::String> mutable_id() { return GetString<std::shared_ptr<flatbuffers::String> >(VT_ID); }
   int64_t val() const { return GetField<int64_t>(VT_VAL, 0); }
   bool mutate_val(int64_t _val) { return SetField(VT_VAL, _val); }
   uint16_t count() const { return GetField<uint16_t>(VT_COUNT, 0); }
@@ -352,8 +349,8 @@ struct Monster FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool mutate_mana(int16_t _mana) { return SetField(VT_MANA, _mana); }
   int16_t hp() const { return GetField<int16_t>(VT_HP, 100); }
   bool mutate_hp(int16_t _hp) { return SetField(VT_HP, _hp); }
-  const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
-  flatbuffers::String *mutable_name() { return GetPointer<flatbuffers::String *>(VT_NAME); }
+  const std::shared_ptr<flatbuffers::String> name() const { return GetString<const std::shared_ptr<flatbuffers::String>>(VT_NAME); }
+  std::shared_ptr<flatbuffers::String> mutable_name() { return GetString<std::shared_ptr<flatbuffers::String> >(VT_NAME); }
   bool KeyCompareLessThan(const Monster *o) const { return *name() < *o->name(); }
   int KeyCompareWithValue(const char *val) const { return strcmp(name()->c_str(), val); }
   const flatbuffers::Vector<uint8_t> *inventory() const { return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_INVENTORY); }

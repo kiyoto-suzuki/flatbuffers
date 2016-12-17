@@ -459,12 +459,6 @@ public:
   bool operator ==(const String &o) const {
     return strcmp(c_str(), o.c_str()) == 0;
   }
-  bool operator !String=(const std::string &o) const {
-    return strcmp(c_str(), o.c_str()) != 0;
-  }
-  bool operator !=(const String &o) const {
-    return strcmp(c_str(), o.c_str()) != 0;
-  }
 };
 #else
 struct String : public Vector<char> {

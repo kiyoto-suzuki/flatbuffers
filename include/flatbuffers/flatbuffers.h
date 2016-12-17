@@ -625,6 +625,7 @@ class Xxtea {
     static bool key_array_initialized = false;
     if (!key_array_initialized) {
       xxtea_to_key_array(Key(), strlen(Key()), key_array, sizeof(key_array));
+      key_array_initialized = true;
     }
     return key_array;
   }

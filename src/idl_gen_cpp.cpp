@@ -802,7 +802,11 @@ class CppGenerator : public BaseGenerator {
             }
             break;
           case BASE_TYPE_STRING:
+#ifdef FLATBUFFERS_ENCRYPTION
+            code += prefix + "VerifyString(verifier, " + GenFieldOffsetName(field) + ")";
+#else
             code += prefix + "verifier.Verify(" + field.name + "())";
+#endif
             break;
           case BASE_TYPE_VECTOR:
             code += prefix + "verifier.Verify(" + field.name + "())";

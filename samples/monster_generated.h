@@ -140,7 +140,7 @@ struct Monster FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyField<int16_t>(verifier, VT_MANA) &&
            VerifyField<int16_t>(verifier, VT_HP) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_NAME) &&
-           verifier.Verify(name()) &&
+           VerifyString(verifier, VT_NAME) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_INVENTORY) &&
            verifier.Verify(inventory()) &&
            VerifyField<int8_t>(verifier, VT_COLOR) &&
@@ -230,7 +230,7 @@ struct Weapon FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_NAME) &&
-           verifier.Verify(name()) &&
+           VerifyString(verifier, VT_NAME) &&
            VerifyField<int16_t>(verifier, VT_DAMAGE) &&
            verifier.EndTable();
   }

@@ -239,7 +239,7 @@ struct Stat FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_ID) &&
-           verifier.Verify(id()) &&
+           VerifyString(verifier, VT_ID) &&
            VerifyField<int64_t>(verifier, VT_VAL) &&
            VerifyField<uint16_t>(verifier, VT_COUNT) &&
            verifier.EndTable();
@@ -410,7 +410,7 @@ struct Monster FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyField<int16_t>(verifier, VT_MANA) &&
            VerifyField<int16_t>(verifier, VT_HP) &&
            VerifyFieldRequired<flatbuffers::uoffset_t>(verifier, VT_NAME) &&
-           verifier.Verify(name()) &&
+           VerifyString(verifier, VT_NAME) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_INVENTORY) &&
            verifier.Verify(inventory()) &&
            VerifyField<int8_t>(verifier, VT_COLOR) &&

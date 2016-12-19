@@ -659,7 +659,7 @@ class Xxtea {
     if (v != nullptr) {
       out->resize(v->size() + FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT + PaddingBytes(v->size(), FLATBUFFERS_ENCRYPTION_XXTEA_ALIGNMENT));
       size_t out_len = xxtea_ubyte_decrypt(reinterpret_cast<const uint8_t *>(v->Data()), v->size(), (uint8_t *)out->data(), out->size(), KeyArray());
-      out->resize(out_len);
+      out->resize(out_len - 1);
     }
     return out;
   }

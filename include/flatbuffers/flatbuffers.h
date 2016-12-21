@@ -1408,12 +1408,8 @@ class Verifier FLATBUFFERS_FINAL_CLASS {
     return Verify(reinterpret_cast<const Vector<T> *>(vec));
   }
 
+#ifndef FLATBUFFERS_ENCRYPTION
   // Verify a pointer (may be NULL) to string.
-#ifdef FLATBUFFERS_ENCRYPTION
-  bool Verify(const std::shared_ptr<String> str) const {
-    return str != nullptr;
-  }
-#else
   bool Verify(const String *str) const {
     const uint8_t *end;
     return !str ||
@@ -1446,8 +1442,7 @@ class Verifier FLATBUFFERS_FINAL_CLASS {
         for (uoffset_t i = 0; i < vec->size(); i++) {
           const uint8_t* p = vec->Data() + sizeof(uoffset_t) * i;
           auto v = reinterpret_cast<const Vector<char> *>(p + ReadScalar<uoffset_t>(p));
-          auto str = Xxtea::DecryptString(v);
-          if (!Verify(str)) return false;
+          return (v != nullptr);
         }
       }
       return true;
@@ -1706,6 +1701,19 @@ class Table {
     return verifier.Check(field_offset != 0) &&
            verifier.Verify<T>(data_ + field_offset);
   }
+
+#ifdef FLATBUFFERS_ENCRYPTION
+  bool VerifyString(const Verifier &verifier, voffset_t field) const {
+    (void)verifier;
+    auto field_offset = GetOptionalFieldOffset(field);
+    auto p = data_ + field_offset;
+    return ReadScalar<uoffset_t>(p) > 0;
+  }
+#else
+  bool VerifyString(const Verifier &verifier, voffset_t field) const {
+    return verifier.Verify(GetString<const String *>(field));
+  }
+#endif
 
  private:
   // private constructor & copy constructor: you obtain instances of this

@@ -611,12 +611,18 @@ template <typename T> const T* data(const std::vector<T> &v) {
 class Xxtea {
  public:
 #ifdef FLATBUFFERS_ENCRYPTION_XXTEA_KEY
-  static constexpr const char* xxtea_key = FLATBUFFERS_ENCRYPTION_XXTEA_KEY;
+  static constexpr const char* xxtea_key_default = FLATBUFFERS_ENCRYPTION_XXTEA_KEY;
 #else
-  static constexpr const char* xxtea_key = "xjhdgUCPiqyxdq8d";  // 16bytes
+  static constexpr const char* xxtea_key_default = "xjhdgUCPiqyxdq8d";  // 16bytes
 #endif
 
-  static inline const char* Key() {
+  static inline const char* Key(const char* key = nullptr) {
+    static char xxtea_key[17] = {0};
+    if (key != nullptr) {
+      std::strncpy(xxtea_key, key, sizeof(xxtea_key));
+    } else if (xxtea_key[0] == '\0') {
+      std::strncpy(xxtea_key, xxtea_key_default, sizeof(xxtea_key));
+    }
     return xxtea_key;
   }
 

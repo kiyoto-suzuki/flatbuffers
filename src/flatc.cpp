@@ -133,6 +133,7 @@ static void Error(const std::string &err, bool usage, bool show_exe_name) {
       "  --schema           Serialize schemas instead of JSON (use with -b)\n"
       "  --conform FILE     Specify a schema the following schemas should be\n"
       "                     an evolution of. Gives errors if not.\n"
+      "  --xxtea-key KEY    Encryption key by xxtea.\n"
       "FILEs may be schemas, or JSON files (conforming to preceding schema)\n"
       "FILEs after the -- must be binary flatbuffer format files.\n"
       "Output files are named using the base file name of the input,\n"
@@ -171,6 +172,7 @@ int main(int argc, const char *argv[]) {
   std::vector<const char *> include_directories;
   size_t binary_files_from = std::numeric_limits<size_t>::max();
   std::string conform_to_schema;
+  char xxtea_key[17];
   for (int argi = 1; argi < argc; argi++) {
     std::string arg = argv[argi];
     if (arg[0] == '-') {
@@ -185,6 +187,9 @@ int main(int argc, const char *argv[]) {
       } else if(arg == "--conform") {
         if (++argi >= argc) Error("missing path following" + arg, true);
         conform_to_schema = argv[argi];
+      } else if(arg == "--xxtea-key") {
+        if (++argi >= argc) Error("missing path following" + arg, true);
+        strncpy(xxtea_key, argv[argi], sizeof(xxtea_key));
       } else if(arg == "--strict-json") {
         opts.strict_json = true;
       } else if(arg == "--allow-non-utf8") {
@@ -266,6 +271,12 @@ int main(int argc, const char *argv[]) {
     if (!flatbuffers::LoadFile(conform_to_schema.c_str(), true, &contents))
       Error("unable to load schema: " + conform_to_schema);
     ParseFile(conform_parser, conform_to_schema, contents, include_directories);
+  }
+
+  if (strlen(xxtea_key) == sizeof(xxtea_key) - 1) {
+    flatbuffers::Xxtea::Key(xxtea_key);
+  } else if (strlen(xxtea_key) > 0) {
+    Error("invalid key length", true);
   }
 
   // Now process the files:

@@ -172,7 +172,7 @@ int main(int argc, const char *argv[]) {
   std::vector<const char *> include_directories;
   size_t binary_files_from = std::numeric_limits<size_t>::max();
   std::string conform_to_schema;
-  char xxtea_key[17];
+  char xxtea_key[17] = {0};
   for (int argi = 1; argi < argc; argi++) {
     std::string arg = argv[argi];
     if (arg[0] == '-') {
